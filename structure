@@ -1,0 +1,168 @@
+#include <stdio.h>
+#include <string.h>
+#include "header.h"  
+
+// Check if a given priority exists in the priority queue.
+unsigned short checkPriorityExistence(PriorityQueue *const pq, unsigned int priority){
+  Item *currentItem = pq->headItem;
+
+  while(currentItem != NULL){
+    if(currentItem->priority == priority)
+      return 1;
+
+    currentItem = currentItem->next;
+  }
+
+  return 0;
+}
+
+// Initialize the priority queue.
+unsigned short initializePriorityQueue(PriorityQueue *const pq){
+  if(pq == NULL)
+    return 0;
+
+  pq->count = 0;
+  pq->headItem = NULL;
+
+  return 1;
+}
+
+// Add an element to the priority queue with a given priority.
+unsigned short enqueueItem(PriorityQueue *const pq, const char newElement[], unsigned int priority){
+  Item *currentItem, *newItem;
+  int i;
+
+  if (pq == NULL || checkPriorityExistence(pq, priority))
+    return 0;
+
+  currentItem = pq->headItem;
+
+  newItem = malloc(sizeof(*newItem));
+  newItem->priority = priority;
+  newItem->label = malloc(strlen(newElement)+1);
+  strcpy(newItem->label, newElement);
+  newItem->next = NULL;
+
+  if(pq->count == 0){
+    pq->headItem = newItem;
+    pq->count++;
+    return 1;
+  }
+
+  if(currentItem->priority < priority){
+    newItem->next = currentItem;
+    pq->headItem = newItem;
+    pq->count++;
+    return 1;
+  }
+
+  for(i = 0; i < pq->count; i++){
+    if((currentItem->next) == NULL || (currentItem->next)->priority < priority){
+      newItem->next = currentItem->next;
+      currentItem->next = newItem;
+      pq->count++;
+      return 1;
+    }
+
+    currentItem = currentItem->next;
+  }
+
+  return 0;
+}
+
+// Check if the priority queue has no elements.
+short isQueueEmpty(const PriorityQueue *const pq){
+  if(pq == NULL)
+    return -1;
+
+  if(pq->count == 0)
+    return 1;
+
+  return 0;
+}
+
+// Get the size of the priority queue.
+short getQueueSize(const PriorityQueue *const pq){
+  if(pq == NULL)
+    return -1;
+
+  return pq->count;
+}
+
+// Peek at the label of the highest priority item in the queue.
+char *peekTopItem(const PriorityQueue *const pq){
+  char *labelCopy;
+
+  if(pq == NULL || isQueueEmpty(pq))
+    return NULL;
+
+  labelCopy = malloc(strlen((pq->headItem)->label)+1);
+  strcpy(labelCopy, (pq->headItem)->label);
+  return labelCopy;
+}
+
+// Remove and return the label of the highest priority item from the queue.
+char *dequeueItem(PriorityQueue *const pq){
+  char *labelCopy;
+  Item *topItem;
+
+  if(pq == NULL || isQueueEmpty(pq))
+    return NULL;
+
+  labelCopy = malloc(strlen((pq->headItem)->label)+1);
+  strcpy(labelCopy, (pq->headItem)->label);
+
+  topItem = pq->headItem;
+  pq->headItem = topItem->next;
+  free(topItem->label);
+  free(topItem);
+  pq->count--;
+
+  return labelCopy;
+}
+
+// Get an array of labels of all items in the priority queue.
+char **getAllItemLabels(const PriorityQueue *pq){
+  char **labels;
+  Item *currentItem;
+  int i;
+  char *labelCopy;
+
+  if(pq == NULL)
+    return NULL;
+
+  labels = malloc(sizeof(*labels) * (pq->count + 1));
+  currentItem = pq->headItem;
+
+  for(i = 0; i < pq->count; i++){
+    labelCopy = malloc(strlen(currentItem->label)+1);
+    strcpy(labelCopy, currentItem->label);
+    labels[i] = labelCopy;
+    currentItem = currentItem->next;
+  }
+
+  labels[i] = NULL;
+
+  return labels;
+}
+
+// Free a list of dynamically allocated strings.
+unsigned short freeLabelList(char *labelList[]){
+  int i = 0;
+
+  if (labelList == NULL)
+    return 0;
+
+  while(labelList[i] != NULL){
+    free(labelList[i]);
+    i++;
+  }
+
+  free(labelList);
+
+  return 1;
+}
+
+// Clear a priority queue by deallocating all items and their labels.
+unsigned short clearPriorityQueue(PriorityQueue *const pq){
+  Item *currentItem, *
