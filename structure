@@ -165,4 +165,124 @@ unsigned short freeLabelList(char *labelList[]){
 
 // Clear a priority queue by deallocating all items and their labels.
 unsigned short clearPriorityQueue(PriorityQueue *const pq){
-  Item *currentItem, *
+  Item *currentItem, *nextItem;
+  int i;
+
+  if(pq == NULL)
+    return 0;
+
+  currentItem = pq->headItem;
+
+  for(i = 0; i < pq->count; i++){
+    nextItem = currentItem;
+    currentItem = currentItem->next;
+    free(nextItem->label);
+    free(nextItem);
+  }
+
+  return 1;
+}
+
+// Retrieve the priority of a given element within a priority queue.
+int getPriorityOfItem(const PriorityQueue *const pq, const char element[]){
+  Item *currentItem;
+
+  if(pq == NULL || element == NULL)
+    return -1;
+
+  currentItem = pq->headItem;
+
+  while(currentItem != NULL){
+    if(strcmp(currentItem->label, element) == 0)
+      return currentItem->priority;
+
+    currentItem = currentItem->next;
+  }
+
+  return -1;
+}
+
+// Remove elements with a priority between two values from a priority queue.
+unsigned int removeItemsByPriorityRange(PriorityQueue *const pq, unsigned int low, unsigned int high){
+  Item *currentItem, *previousItem = NULL, *tempItem;
+  unsigned int removedCount = 0;
+
+  if(pq == NULL || pq->count == 0)
+    return 0;
+
+  currentItem = pq->headItem;
+
+  while(currentItem != NULL){
+    if(currentItem->priority >= low && currentItem->priority <= high){
+      if(previousItem == NULL){
+        pq->headItem = currentItem->next;
+      } else {
+        previousItem->next = currentItem->next;
+      }
+      
+      tempItem = currentItem;
+      currentItem = currentItem->next;
+      free(tempItem->label);
+      free(tempItem);
+      pq->count--;
+      removedCount++;
+    } else {
+      previousItem = currentItem;
+      currentItem = currentItem->next;
+    }
+  }
+
+  return removedCount;
+}
+
+// Change the priority of a given item and reposition it in the queue.
+unsigned int changeItemPriority(PriorityQueue *const pq, const char element[], unsigned int newPriority){
+  Item *currentItem, *previousItem = NULL, *tempItem;
+  unsigned int found = 0;
+
+  if(pq == NULL || element == NULL || checkPriorityExistence(pq, newPriority))
+    return 0;
+
+  currentItem = pq->headItem;
+
+  // Find the item and detach it from the queue
+  while(currentItem != NULL){
+    if(strcmp(currentItem->label, element) == 0){
+      found = 1;
+      break;
+    }
+    previousItem = currentItem;
+    currentItem = currentItem->next;
+  }
+
+  if(!found)
+    return 0;
+
+  if(previousItem != NULL){
+    previousItem->next = currentItem->next;
+  } else {
+    pq->headItem = currentItem->next;
+  }
+
+  currentItem->priority = newPriority;
+
+  // Re-insert the item at the correct position
+  previousItem = NULL;
+  tempItem = pq->headItem;
+
+  while(tempItem != NULL && tempItem->priority >= newPriority){
+    previousItem = tempItem;
+    tempItem = tempItem->next;
+  }
+
+  if(previousItem == NULL){
+    currentItem->next = pq->headItem;
+    pq->headItem = currentItem;
+  } else {
+    currentItem->next = previousItem->next;
+    previousItem->next = currentItem;
+  }
+
+  return 1;
+}
+
