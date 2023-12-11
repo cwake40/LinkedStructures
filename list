@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "new-unified-header.h"  // Replace with the actual name of the unified header file
+#include "new-unified-header.h"  
 
 // Clears a priority queue, deallocating all items and their labels.
 unsigned short clearPriorityQueue(PriorityQueue *const pq){
