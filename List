@@ -1,0 +1,163 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "new-unified-header.h"  // Replace with the actual name of the unified header file
+
+// Clears a priority queue, deallocating all items and their labels.
+unsigned short clearPriorityQueue(PriorityQueue *const pq){
+  Item *currentItem, *nextItem;
+
+  if(pq == NULL)
+    return 0;
+
+  currentItem = pq->headItem;
+
+  while(currentItem != NULL){
+    nextItem = currentItem->next;
+    free(currentItem->label);
+    free(currentItem);
+    currentItem = nextItem;
+  }
+
+  pq->count = 0;
+  pq->headItem = NULL;
+
+  return 1;
+}
+
+// Initializes the given priority queue.
+unsigned short initializePriorityQueue(PriorityQueue *const pq){
+  if(pq == NULL)
+    return 0;
+
+  pq->count = 0;
+  pq->headItem = NULL;
+
+  return 1;
+}
+
+// Initializes the list of priority queues.
+unsigned short initializePriorityQueuesList(PriorityQueuesList *const pqList){
+  if(pqList == NULL)
+    return 0;
+
+  pqList->queueCount = 0;
+  pqList->firstElement = NULL;
+
+  return 1;
+}
+
+// Adds a new priority queue with a given label to the list of priority queues.
+unsigned short addPriorityQueue(PriorityQueuesList *const pqList, const char newQueueLabel[]){
+  QueueElement *currentElement, *newElement;
+  PriorityQueue *newPQ;
+
+  if(pqList == NULL)
+    return 0;
+
+  currentElement = pqList->firstElement;
+
+  // Check if a queue with the same label already exists
+  while(currentElement != NULL){
+    if(strcmp(newQueueLabel, currentElement->label) == 0)
+      return 0;
+    currentElement = currentElement->next;
+  }
+
+  // Create a new queue element
+  newElement = malloc(sizeof(*newElement));
+  if(newElement == NULL) return 0;
+
+  newElement->label = strdup(newQueueLabel);
+  if(newElement->label == NULL){
+    free(newElement);
+    return 0;
+  }
+
+  newPQ = malloc(sizeof(*newPQ));
+  if(newPQ == NULL){
+    free(newElement->label);
+    free(newElement);
+    return 0;
+  }
+
+  initializePriorityQueue(newPQ);
+  newElement->queue = newPQ;
+  newElement->next = pqList->firstElement;
+  pqList->firstElement = newElement;
+  pqList->queueCount++;
+
+  return 1;
+}
+
+// Returns the number of priority queues in the list.
+int countPriorityQueues(const PriorityQueuesList *const pqList){
+  if(pqList == NULL)
+    return -1;
+
+  return pqList->queueCount;
+}
+
+// Retrieves a priority queue from the list using its label.
+PriorityQueue *getPriorityQueue(const PriorityQueuesList *const pqList, const char queueLabel[]){
+  QueueElement *currentElement;
+
+  if(pqList == NULL || queueLabel == NULL)
+    return NULL;
+
+  currentElement = pqList->firstElement;
+
+  while(currentElement != NULL){
+    if(strcmp(queueLabel, currentElement->label) == 0)
+      return currentElement->queue;
+
+    currentElement = currentElement->next;
+  }
+
+  return NULL;
+}
+
+// Removes a priority queue from the list.
+unsigned short removePriorityQueue(PriorityQueuesList *const pqList, const char queueLabelToRemove[]){
+  QueueElement *currentElement, *previousElement = NULL;
+
+  if(pqList == NULL || queueLabelToRemove == NULL)
+    return 0;
+
+  currentElement = pqList->firstElement;
+
+  while(currentElement != NULL){
+    if(strcmp(queueLabelToRemove, currentElement->label) == 0){
+      if(previousElement == NULL){
+        pqList->firstElement = currentElement->next;
+      } else {
+        previousElement->next = currentElement->next;
+      }
+
+      clearPriorityQueue(currentElement->queue);
+      free(currentElement->label);
+      free(currentElement->queue);
+      free(currentElement);
+
+      pqList->queueCount--;
+      return 1;
+    }
+    previousElement = currentElement;
+    currentElement = currentElement->next;
+  }
+
+  return 0;
+}
+
+// Clears and frees an entire list of priority queues from memory.
+unsigned short clearPriorityQueuesList(PriorityQueuesList *const pqList){
+  QueueElement *currentElement, *nextElement;
+
+  if(pqList == NULL)
+    return 0;
+
+  currentElement = pqList->firstElement;
+
+  while(currentElement != NULL){
+    next
